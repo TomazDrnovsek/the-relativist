@@ -36,19 +36,19 @@ class AudioEngine {
     this.resume();
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
+    const now = this.ctx.currentTime;
     
     osc.type = 'sine';
-    // Slightly lower pitch start, faster decay for a "premium" feel
-    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(100, this.ctx.currentTime + 0.08);
+    osc.frequency.setValueAtTime(600, now);
+    osc.frequency.linearRampToValueAtTime(100, now + 0.08);
     
-    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.1, now);
+    gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
     
     osc.connect(gain);
     gain.connect(this.ctx.destination);
-    osc.start();
-    osc.stop(this.ctx.currentTime + 0.08);
+    osc.start(now);
+    osc.stop(now + 0.1);
   }
 
   // Tap/Thud: Soft, grounded (Card selection)
