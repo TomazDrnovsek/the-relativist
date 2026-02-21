@@ -42,3 +42,15 @@ export interface SavedDeck {
   availableHues: number[]; // Array of hue buckets to cycle through
   cycleCount: number;      // How many times we've cycled the deck
 }
+
+export interface GameState {
+  collection: SessionData[];
+  level: number;
+  sessionCount: number;
+  currentSession: SessionData | null;
+  settings: {
+    isBauhausMode: boolean;
+    isSoundEnabled: boolean;
+  };
+  hasCompletedOnboarding: boolean;
+}

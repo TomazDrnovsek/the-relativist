@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { HSL, StripData, SessionData } from './types';
+import { HSL, StripData, SessionData, GameState } from './types';
 import { 
   hslToString, 
   generateRandomColor, 
@@ -28,6 +28,8 @@ const STRIP_2_BG: HSL = { h: 0, s: 0, l: 98 };  // Pure White
 const App: React.FC = () => {
   // --- State ---
   const [hasStarted, setHasStarted] = useState(false);
+  const [isStateLoaded, setIsStateLoaded] = useState(false); // Prevents premature saves
+  
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   
   const [level, setLevel] = useState<number>(1);
@@ -57,56 +59,65 @@ const App: React.FC = () => {
 
   // --- Initialization ---
   useEffect(() => {
-    // 1. Load Collection (V4)
-    const savedCollection = localStorage.getItem('relativist_collection_v4');
-    if (savedCollection) setCollection(JSON.parse(savedCollection));
+    const savedStateJSON = localStorage.getItem('relativist_game_state_v5');
 
-    // 2. Load Level (V4)
-    const savedLevel = localStorage.getItem('relativist_level_v4');
-    const initialLevel = savedLevel ? parseInt(savedLevel, 10) : 1;
-    setLevel(initialLevel);
-    
-    // 3. Load Session Count (V4)
-    const savedSessionCount = localStorage.getItem('relativist_session_count_v4');
-    const initialSessionCount = savedSessionCount ? parseInt(savedSessionCount, 10) : 1;
-    setSessionCount(initialSessionCount);
+    if (savedStateJSON) {
+        try {
+            const savedState: GameState = JSON.parse(savedStateJSON);
+            setCollection(savedState.collection || []);
+            setLevel(savedState.level || 1);
+            setSessionCount(savedState.sessionCount || 1);
+            setSession(savedState.currentSession || getNextSession(savedState.sessionCount || 1));
+            setIsBauhausMode(savedState.settings?.isBauhausMode || false);
+            
+            const soundEnabled = savedState.settings?.isSoundEnabled !== false; // default to true
+            setIsSoundEnabled(soundEnabled);
+            audio.setMuted(!soundEnabled);
 
-    // 4. Load Current Session Data (V4)
-    const savedSessionData = localStorage.getItem('relativist_current_session_v4');
-    let currentSession: SessionData;
-
-    if (savedSessionData) {
-        currentSession = JSON.parse(savedSessionData);
+            setHasCompletedOnboarding(savedState.hasCompletedOnboarding || false);
+        } catch (error) {
+            console.error("Failed to parse saved state, starting fresh:", error);
+            setSession(getNextSession(1));
+        }
     } else {
-        // Generate new session if none exists
-        currentSession = getNextSession(initialSessionCount);
-        localStorage.setItem('relativist_current_session_v4', JSON.stringify(currentSession));
+        // No saved state, generate a fresh session
+        setSession(getNextSession(1));
     }
-    setSession(currentSession);
-
-    // 5. Load Settings
-    const savedBauhaus = localStorage.getItem('relativist_bauhaus');
-    if (savedBauhaus) setIsBauhausMode(savedBauhaus === 'true');
-
-    const savedSound = localStorage.getItem('relativist_sound');
-    if (savedSound !== null) {
-       const enabled = savedSound === 'true';
-       setIsSoundEnabled(enabled);
-       audio.setMuted(!enabled);
-    }
-    
-    const savedOnboarding = localStorage.getItem('relativist_onboarding_complete');
-    if (savedOnboarding === 'true') {
-        setHasCompletedOnboarding(true);
-    }
-    
+    setIsStateLoaded(true);
   }, []);
+
+  // --- State Persistence ---
+  useEffect(() => {
+    if (!isStateLoaded) return; // Wait for initial state to load
+
+    const gameState: GameState = {
+      collection,
+      level,
+      sessionCount,
+      currentSession: session,
+      settings: {
+        isBauhausMode,
+        isSoundEnabled,
+      },
+      hasCompletedOnboarding,
+    };
+    localStorage.setItem('relativist_game_state_v5', JSON.stringify(gameState));
+
+  }, [
+      collection, 
+      level, 
+      sessionCount, 
+      session, 
+      isBauhausMode, 
+      isSoundEnabled, 
+      hasCompletedOnboarding,
+      isStateLoaded
+  ]);
 
   // --- Reactive Game Loop ---
   useEffect(() => {
     if (!session || !hasCompletedOnboarding || showArtifact) return;
 
-    // 1. Determine Target from Palette using PlayOrder (The Shuffle)
     const currentSlot = (session.playOrder && session.playOrder[level - 1] !== undefined)
         ? session.playOrder[level - 1]
         : (level - 1);
@@ -114,33 +125,18 @@ const App: React.FC = () => {
     const safeSlot = Math.min(Math.max(0, currentSlot), 15);
     const newTarget = session.palette[safeSlot];
     
-    // 2. Generate Contexts (Strip 3 is random context)
     const strip3Bg = {
       h: Math.floor(Math.random() * 360),
       s: 70 + Math.floor(Math.random() * 30), 
       l: 40 + Math.floor(Math.random() * 20) 
     };
 
-    // 3. Initialize Strips with RANDOM start colors
     const newStrips: StripData[] = [
-      { 
-        id: 0, 
-        backgroundColor: STRIP_1_BG, 
-        chipColor: generateRandomColor()
-      },
-      { 
-        id: 1, 
-        backgroundColor: STRIP_2_BG, 
-        chipColor: generateRandomColor()
-      },
-      { 
-        id: 2, 
-        backgroundColor: strip3Bg, 
-        chipColor: generateRandomColor()
-      }
+      { id: 0, backgroundColor: STRIP_1_BG, chipColor: generateRandomColor() },
+      { id: 1, backgroundColor: STRIP_2_BG, chipColor: generateRandomColor() },
+      { id: 2, backgroundColor: strip3Bg, chipColor: generateRandomColor() }
     ];
 
-    // 4. Update State
     setTargetColor(newTarget);
     setStrips(newStrips);
     setIsDeveloped(false);
@@ -148,15 +144,7 @@ const App: React.FC = () => {
     setSelectedStripId(0);
     setShowResultValues(false);
 
-    localStorage.setItem('relativist_level_v4', level.toString());
-
   }, [session, level, hasCompletedOnboarding, showArtifact]);
-
-
-  // Helper to save session state
-  const saveSession = (s: SessionData) => {
-      localStorage.setItem('relativist_current_session_v4', JSON.stringify(s));
-  };
 
   const handleStart = async () => {
       await audio.resume();
@@ -166,20 +154,16 @@ const App: React.FC = () => {
   
   const handleOnboardingComplete = () => {
       setHasCompletedOnboarding(true);
-      localStorage.setItem('relativist_onboarding_complete', 'true');
   };
 
   const toggleBauhausMode = () => {
       audio.playClick();
-      const newVal = !isBauhausMode;
-      setIsBauhausMode(newVal);
-      localStorage.setItem('relativist_bauhaus', newVal.toString());
+      setIsBauhausMode(prev => !prev);
   };
 
   const toggleSound = () => {
       const newVal = !isSoundEnabled;
       setIsSoundEnabled(newVal);
-      localStorage.setItem('relativist_sound', newVal.toString());
       audio.setMuted(!newVal);
       if (newVal) audio.playClick();
   };
@@ -217,7 +201,6 @@ const App: React.FC = () => {
     
     if (!session) return;
     
-    // 1. Update Progress
     const currentSlot = (session.playOrder && session.playOrder[level - 1] !== undefined)
         ? session.playOrder[level - 1]
         : (level - 1);
@@ -226,20 +209,14 @@ const App: React.FC = () => {
     newProgress[currentSlot] = score || 0;
     
     const updatedSession = { ...session, progress: newProgress };
-    setSession(updatedSession);
-    saveSession(updatedSession);
     
-    // 2. Check Completion
     if (level >= 16) {
-        // Session Complete
         const completeSession = { ...updatedSession, isComplete: true };
         setSession(completeSession);
-        saveSession(completeSession);
-        
         setShowArtifact(true);
         audio.playSuccess(); 
     } else {
-        // Next Level
+        setSession(updatedSession);
         setLevel(prev => prev + 1);
     }
   };
@@ -249,15 +226,12 @@ const App: React.FC = () => {
       
       const newCollection = [session, ...collection];
       setCollection(newCollection);
-      localStorage.setItem('relativist_collection_v4', JSON.stringify(newCollection));
       
       const nextId = session.id + 1;
       setSessionCount(nextId);
-      localStorage.setItem('relativist_session_count_v4', nextId.toString());
       
       const nextSession = getNextSession(nextId);
       setSession(nextSession);
-      saveSession(nextSession);
       
       setShowArtifact(false);
       setLevel(1);
@@ -267,24 +241,20 @@ const App: React.FC = () => {
       audio.playClick();
       
       const nextId = sessionCount + 1;
-      setSessionCount(nextId);
-      localStorage.setItem('relativist_session_count_v4', nextId.toString());
-      
       const newSession = getNextSession(nextId);
+
+      setSessionCount(nextId);
       setSession(newSession);
-      saveSession(newSession);
-      
+      setCollection([]);
+      setLevel(1);
       setHasCompletedOnboarding(false);
-      localStorage.removeItem('relativist_onboarding_complete');
       
       setShowMenu(false);
-      setLevel(1);
   };
 
   const handleRestartOnboarding = () => {
       audio.playClick();
       setHasCompletedOnboarding(false);
-      localStorage.removeItem('relativist_onboarding_complete');
       setShowMenu(false);
   };
 
@@ -569,7 +539,6 @@ const App: React.FC = () => {
               </div>
 
               {/* Action */}
-              {/* PRIMARY ANCHOR FIX: Win/Lose Buttons re-ordered so PRIMARY (Black) is always at bottom */}
               <div className="flex-none w-full px-6 pb-8 flex flex-col gap-3 z-20">
                    {isWin && (
                        <MechanicalButton 
@@ -588,7 +557,6 @@ const App: React.FC = () => {
                           {level >= 16 ? "authenticate session" : "next assignment"}
                       </MechanicalButton>
                    ) : (
-                      // LOSS STATE: Recalibrate is PRIMARY, so it takes the bottom slot
                       <MechanicalButton 
                           onTrigger={handleRetry}
                           className="w-full h-14 bg-[#121212] text-white font-normal uppercase tracking-widest text-xs border border-[#121212] flex items-center justify-center"
