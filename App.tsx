@@ -461,7 +461,7 @@ const App: React.FC = () => {
                   />
                   </div>
 
-                  <div className="flex-1 flex items-end justify-center min-h-0">
+                  <div className="flex-1 flex items-end justify-center pb-8 min-h-0">
                       <MechanicalButton 
                           onTrigger={runAnalysis}
                           disabled={isDeveloped}
