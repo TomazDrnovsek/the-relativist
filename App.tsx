@@ -338,7 +338,10 @@ const App: React.FC = () => {
          className="flex-1 flex flex-col w-full h-full animate-film-advance"
       >
           {/* --- 1. HEADER --- */}
-          <div className="shrink-0 relative flex flex-col pt-safe-top z-20 border-b border-[#121212]">
+          <div 
+            className="shrink-0 relative flex flex-col pt-safe-top z-20 border-b border-[#121212]"
+            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+          >
              
              {/* HEADER BAR */}
              <header className="w-full px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center relative z-30 shrink-0 border-b border-[#121212]/5">
@@ -432,8 +435,8 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="h-[40%] bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30">
-              <div className="flex-1 flex flex-col">
+          <div className="h-[45%] bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30 shrink-0">
+              <div className="flex-1 flex flex-col h-full">
                   <div className="flex flex-col gap-6">
                       <Slider 
                           label="H" 
@@ -458,7 +461,7 @@ const App: React.FC = () => {
                   />
                   </div>
 
-                  <div className="flex-1 flex items-end justify-center pb-8">
+                  <div className="flex-1 flex items-end justify-center min-h-0">
                       <MechanicalButton 
                           onTrigger={runAnalysis}
                           disabled={isDeveloped}
