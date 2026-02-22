@@ -338,7 +338,7 @@ const App: React.FC = () => {
          className="flex-1 flex flex-col w-full h-full animate-film-advance"
       >
           {/* --- 1. HEADER --- */}
-          <div className="h-[20%] relative flex flex-col pt-safe-top z-20 border-b border-[#121212]">
+          <div className="shrink-0 relative flex flex-col pt-safe-top z-20 border-b border-[#121212]">
              
              {/* HEADER BAR */}
              <header className="w-full px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center relative z-30 shrink-0 border-b border-[#121212]/5">
@@ -387,7 +387,7 @@ const App: React.FC = () => {
              </header>
 
              {/* Target Swatch */}
-             <div className="flex-1 w-full relative flex items-center justify-center">
+             <div className="h-[10vh] w-full relative flex items-center justify-center">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[10px] font-normal uppercase tracking-widest text-[#737373] pointer-events-none">
                     REF
                 </span>
@@ -410,7 +410,7 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 2. THE STACK --- */}
-          <div className="h-[35%] flex flex-col w-full relative z-10 border-b border-[#121212]">
+          <div className="h-[30%] flex flex-col w-full relative z-10 border-b border-[#121212]">
             {strips.map((strip, index) => {
                 const isSelected = !isDeveloped && selectedStripId === strip.id;
                 const { label, color } = getStripLabelConfig(index, strip.backgroundColor);
@@ -432,7 +432,7 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="h-[45%] bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30">
+          <div className="h-[40%] bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30">
               <div className="flex-1 flex flex-col">
                   <div className="flex flex-col gap-6">
                       <Slider 
