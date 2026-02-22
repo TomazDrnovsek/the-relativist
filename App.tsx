@@ -435,8 +435,8 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="h-[45%] bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30 shrink-0">
-              <div className="flex-1 flex flex-col h-full">
+          <div className="flex-none bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-8 pb-safe-bottom relative z-30">
+              <div className="flex flex-col">
                   <div className="flex flex-col gap-6">
                       <Slider 
                           label="H" 
@@ -461,7 +461,7 @@ const App: React.FC = () => {
                   />
                   </div>
 
-                  <div className="flex-1 flex items-end justify-center pb-8 min-h-0">
+                  <div className="mt-8">
                       <MechanicalButton 
                           onTrigger={runAnalysis}
                           disabled={isDeveloped}
