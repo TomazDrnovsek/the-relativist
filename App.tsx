@@ -435,7 +435,7 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="flex-none bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-8 pb-safe-bottom relative z-30">
+          <div className="flex-none bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30">
               <div className="flex flex-col">
                   <div className="flex flex-col gap-6">
                       <Slider 
@@ -461,7 +461,7 @@ const App: React.FC = () => {
                   />
                   </div>
 
-                  <div className="mt-8">
+                  <div className="mt-8 pb-8">
                       <MechanicalButton 
                           onTrigger={runAnalysis}
                           disabled={isDeveloped}
