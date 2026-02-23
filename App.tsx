@@ -325,7 +325,7 @@ const App: React.FC = () => {
   if (!currentStrip) return null;
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-[#F5F2EB] font-sans overflow-hidden select-none text-[#121212]">
+    <div className="fixed inset-0 flex flex-col bg-[#F5F2EB] font-sans overflow-hidden select-none text-[#121212]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <style>{`
         @keyframes slideInStack {
           0% { transform: translateX(100%); opacity: 0; }
@@ -339,8 +339,7 @@ const App: React.FC = () => {
       >
           {/* --- 1. HEADER --- */}
           <div 
-            className="shrink-0 relative flex flex-col pt-safe-top z-20 border-b border-[#121212]"
-            style={{ paddingTop: 'env(safe-area-inset-top)' }}
+            className="h-[20%] relative flex flex-col z-20 border-b border-[#121212]"
           >
              
              {/* HEADER BAR */}
@@ -413,7 +412,7 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 2. THE STACK --- */}
-          <div className="h-[30%] flex flex-col w-full relative z-10 border-b border-[#121212]">
+          <div className="h-[35%] flex flex-col w-full relative z-10 border-b border-[#121212]">
             {strips.map((strip, index) => {
                 const isSelected = !isDeveloped && selectedStripId === strip.id;
                 const { label, color } = getStripLabelConfig(index, strip.backgroundColor);
@@ -435,8 +434,8 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="flex-none bg-[#F5F2EB] flex flex-col px-6 pt-8 pb-safe-bottom relative z-30">
-              <div className="flex flex-col">
+          <div className="h-[45%] shrink-0 flex flex-col px-6 pt-8 pb-safe-bottom">
+              <div className="flex flex-col h-full">
                   <div className="flex flex-col gap-6">
                       <Slider 
                           label="H" 
@@ -461,7 +460,7 @@ const App: React.FC = () => {
                   />
                   </div>
 
-                  <div className="mt-8 pb-8">
+                  <div className="flex-1 flex items-end justify-center pb-8 min-h-0">
                       <MechanicalButton 
                           onTrigger={runAnalysis}
                           disabled={isDeveloped}
@@ -482,7 +481,7 @@ const App: React.FC = () => {
 
       {/* --- 4. RESULT OVERLAY --- */}
       {isDeveloped && (
-          <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col pt-safe-top pb-safe-bottom animate-in fade-in duration-500 overflow-hidden">
+          <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col pt-safe-top animate-in fade-in duration-500 overflow-hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 32px)' }}>
               
               {isWin && isBauhausMode && <WinEffect isBauhausMode={isBauhausMode} />}
 
@@ -542,7 +541,7 @@ const App: React.FC = () => {
               </div>
 
               {/* Action */}
-              <div className="flex-none w-full px-6 pb-8 flex flex-col gap-3 z-20">
+              <div className="flex-none w-full px-6 flex flex-col gap-3 z-20">
                    {isWin && (
                        <MechanicalButton 
                           onTrigger={handleRetry}
