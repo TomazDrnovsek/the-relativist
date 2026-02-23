@@ -41,13 +41,13 @@ const Archive: React.FC<ArchiveProps> = ({ currentSession, currentLevel, session
             
             {/* CURRENT ACTIVE SESSION */}
             {currentSession && (
-                <div className="col-span-2 border border-[#121212]/10 p-4 bg-white relative">
+                <div className="col-span-2 border border-neutral-200 p-4 bg-white relative">
                     <div className="flex justify-between items-start mb-4">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
-                            in progress
+                        <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-neutral-400">
+                            Active Session
                         </span>
-                        <span className="text-[10px] font-mono text-[#121212]">
-                            ID.{currentSession.id.toString().padStart(2, '0')}
+                        <span className="text-base font-black text-[#121212]">
+                            {currentSession.id.toString().padStart(2, '0')}
                         </span>
                     </div>
                     
@@ -64,8 +64,10 @@ const Archive: React.FC<ArchiveProps> = ({ currentSession, currentLevel, session
                             <h3 className="text-2xl font-black text-[#121212] tracking-tighter opacity-20 truncate">
                                 UNIDENTIFIED
                             </h3>
-                            <div className="mt-2 text-[10px] font-mono text-neutral-500 uppercase tracking-widest">
-                                ASSIGNMENT {currentLevel.toString().padStart(2, '0')} / 16
+                            <div className="mt-2">
+                                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-400">ASSIGNMENT </span>
+                                <span className="text-lg font-black tracking-tight text-[#121212]">{currentLevel.toString().padStart(2, '0')}</span>
+                                <span className="text-sm font-mono text-neutral-400"> / 16</span>
                             </div>
                          </div>
                     </div>
