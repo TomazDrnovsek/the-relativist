@@ -19,7 +19,7 @@ const Archive: React.FC<ArchiveProps> = ({ currentSession, currentLevel, session
     : (currentLevel - 1);
 
   return (
-    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col pt-safe-top animate-in slide-in-from-bottom duration-300 font-sans text-[#121212]">
+    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col animate-in slide-in-from-bottom duration-300 font-sans text-[#121212]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header - Aligned with Main Screen: py-4, border-b border-black/5 */}
       <div className="px-6 py-4 mb-8 flex justify-between items-center bg-[#F5F2EB] border-b border-[#121212]/5 shrink-0">
         <h2 className="text-4xl font-bold lowercase tracking-[-0.04em] text-[#121212]">sessions.</h2>

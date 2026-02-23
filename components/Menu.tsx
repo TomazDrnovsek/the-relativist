@@ -22,7 +22,7 @@ const Menu: React.FC<MenuProps> = ({
     onRestartOnboarding
 }) => {
   return (
-    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col px-6 pt-safe-top animate-in slide-in-from-left duration-300 font-sans text-[#121212]">
+    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col px-6 animate-in slide-in-from-left duration-300 font-sans text-[#121212]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header aligned with Main Screen: 1px light border, safe area padding */}
       <div className="-mx-6 px-6 flex justify-between items-center py-4 mb-6 border-b border-[#121212]/5">
         <h2 className="text-4xl font-bold lowercase tracking-[-0.04em]">menu.</h2>
