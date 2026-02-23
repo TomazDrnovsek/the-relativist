@@ -44,13 +44,13 @@ const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
                 color={hslToString({ h: currentTuning.hue, s: 85, l: 50 })}
                 isBauhausMode={true} 
                 hasBorder={false}
-                className="w-full h-full drop-shadow-sm"
+                className="w-full h-full"
             />
         </div>
         
         {/* The Micro-Label (Technical Feedback) */}
         <div className="text-[9px] font-mono font-medium uppercase tracking-[0.25em] text-neutral-400 tabular-nums animate-pulse">
-             SYSTEM_READY // {currentTuning.hue.toString().padStart(3, '0')}°
+             TAP TO INITIALIZE
         </div>
       </div>
       

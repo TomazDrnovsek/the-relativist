@@ -24,7 +24,7 @@ const Menu: React.FC<MenuProps> = ({
   return (
     <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col px-6 pt-safe-top animate-in slide-in-from-left duration-300 font-sans text-[#121212]">
       {/* Header aligned with Main Screen: 1px light border, safe area padding */}
-      <div className="-mx-6 px-6 flex justify-between items-center py-4 mb-12 border-b border-[#121212]/5">
+      <div className="-mx-6 px-6 flex justify-between items-center py-4 mb-6 border-b border-[#121212]/5">
         <h2 className="text-4xl font-bold lowercase tracking-[-0.04em]">menu.</h2>
         <MechanicalButton 
             onTrigger={() => {
@@ -38,7 +38,7 @@ const Menu: React.FC<MenuProps> = ({
         </MechanicalButton>
       </div>
 
-      <nav className="flex flex-col gap-8 overflow-y-auto overflow-x-hidden pb-safe-bottom w-full">
+      <nav className="flex flex-col gap-8 overflow-y-auto overflow-x-hidden w-full flex-1">
         {/* 01 RESUME */}
         <MechanicalButton 
             onTrigger={() => {
@@ -135,13 +135,15 @@ const Menu: React.FC<MenuProps> = ({
                 sessions
             </span>
         </MechanicalButton>
+      </nav>
 
-        <div className="mt-auto pt-12 flex justify-center opacity-30">
+      <div className="flex-none pb-safe-bottom pb-12">
+        <div className="pt-12 flex justify-center opacity-30">
             <span className="text-[9px] font-mono tracking-widest text-[#121212] uppercase">
-                v1.0.8
+                V0.1
             </span>
         </div>
-      </nav>
+      </div>
     </div>
   );
 };
