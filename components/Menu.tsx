@@ -12,138 +12,80 @@ interface MenuProps {
   onRestartOnboarding: () => void;
 }
 
-const Menu: React.FC<MenuProps> = ({ 
-    onClose, 
-    onOpenArchive,
-    isBauhausMode, 
-    toggleBauhausMode,
-    isSoundEnabled,
-    toggleSound,
-    onRestartOnboarding
+const Menu: React.FC<MenuProps> = ({
+  onClose,
+  onOpenArchive,
+  isBauhausMode,
+  toggleBauhausMode,
+  isSoundEnabled,
+  toggleSound,
+  onRestartOnboarding,
 }) => {
   return (
-    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col px-6 animate-in slide-in-from-left duration-300 font-sans text-[#121212]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      {/* Header aligned with Main Screen: 1px light border, safe area padding */}
-      <div className="-mx-6 px-6 flex justify-between items-center py-4 mb-6 border-b border-[#121212]/5">
-        <h2 className="text-4xl font-bold lowercase tracking-[-0.04em]">menu.</h2>
-        <MechanicalButton 
+    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col animate-in slide-in-from-left duration-300 font-sans text-[#121212]">
+
+      {/* HEADER */}
+      <div className="shrink-0 relative flex flex-col pt-safe-top z-20 border-b border-[#eae7e0] bg-[#F5F2EB]">
+        <div className="w-full px-6 py-4 flex justify-between items-center relative z-30 shrink-0">
+          <h2 className="text-4xl font-bold lowercase tracking-[-0.04em]">menu.</h2>
+          <MechanicalButton
             onTrigger={() => {
-                audio.playClick();
-                onClose();
-            }} 
+              audio.playClick();
+              onClose();
+            }}
             scaleActive={0.85}
-            className="w-12 h-12 flex items-center justify-center border-2 border-[#121212] hover:bg-[#121212] hover:text-white transition-colors"
-        >
+            className="w-12 h-12 flex items-center justify-center border-2 border-[#121212] hover:bg-[#121212] hover:text-white transition-colors text-sm"
+          >
             ✕
-        </MechanicalButton>
-      </div>
-
-      <nav className="flex flex-col gap-8 overflow-y-auto overflow-x-hidden w-full flex-1">
-        {/* 01 RESUME */}
-        <MechanicalButton 
-            onTrigger={() => {
-                audio.playClick();
-                onClose();
-            }} 
-            scaleActive={0.98}
-            className="text-left group flex items-baseline gap-6 w-full max-w-full"
-        >
-            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-hover:text-[#121212] transition-colors shrink-0">01</span>
-            <span className="flex-1 min-w-0 text-2xl font-light uppercase tracking-widest group-hover:translate-x-2 group-hover:font-bold transition-all text-[#121212] truncate">
-                resume
-            </span>
-        </MechanicalButton>
-        
-        {/* 02 BAUHAUS */}
-        <MechanicalButton 
-            onTrigger={toggleBauhausMode} 
-            scaleActive={0.98}
-            className="text-left group flex items-baseline gap-6 w-full max-w-full"
-        >
-            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-hover:text-[#121212] transition-colors shrink-0">02</span>
-            <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                <span className="text-2xl font-light uppercase tracking-widest text-[#121212] truncate group-hover:translate-x-2 group-hover:font-bold transition-all">
-                    bauhaus
-                </span>
-                
-                <div className="flex items-center ml-4 shrink-0">
-                    <div className={`
-                        w-12 h-6 border-2 border-[#121212] p-1 relative transition-colors duration-200
-                        ${isBauhausMode ? 'bg-[#121212]' : 'bg-transparent'}
-                    `}>
-                        <div className={`
-                            h-full w-1/2 bg-[#121212] transition-all duration-300 ease-out
-                            ${isBauhausMode ? 'translate-x-full bg-white' : 'translate-x-0'}
-                        `} />
-                    </div>
-                </div>
-            </div>
-        </MechanicalButton>
-
-        {/* 03 SOUND */}
-        <MechanicalButton 
-            onTrigger={toggleSound} 
-            scaleActive={0.98}
-            className="text-left group flex items-baseline gap-6 w-full max-w-full"
-        >
-            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-hover:text-[#121212] transition-colors shrink-0">03</span>
-            <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
-                <span className="text-2xl font-light uppercase tracking-widest text-[#121212] truncate group-hover:translate-x-2 group-hover:font-bold transition-all">
-                    sound
-                </span>
-                
-                <div className="flex items-center ml-4 shrink-0">
-                    <div className={`
-                        w-12 h-6 border-2 border-[#121212] p-1 relative transition-colors duration-200
-                        ${isSoundEnabled ? 'bg-[#121212]' : 'bg-transparent'}
-                    `}>
-                        <div className={`
-                            h-full w-1/2 bg-[#121212] transition-all duration-300 ease-out
-                            ${isSoundEnabled ? 'translate-x-full bg-white' : 'translate-x-0'}
-                        `} />
-                    </div>
-                </div>
-            </div>
-        </MechanicalButton>
-
-        {/* 04 TUTORIAL */}
-        <MechanicalButton 
-            onTrigger={() => {
-                audio.playClick();
-                onRestartOnboarding();
-            }} 
-            scaleActive={0.98}
-            className="text-left group flex items-baseline gap-6 w-full max-w-full"
-        >
-            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-hover:text-[#121212] transition-colors shrink-0">04</span>
-            <span className="flex-1 min-w-0 text-2xl font-light uppercase tracking-widest group-hover:translate-x-2 group-hover:font-bold transition-all text-[#121212] truncate">
-                tutorial
-            </span>
-        </MechanicalButton>
-
-        {/* 05 SESSIONS */}
-        <MechanicalButton 
-            onTrigger={() => {
-                audio.playClick();
-                onOpenArchive();
-            }} 
-            scaleActive={0.98}
-            className="text-left group flex items-baseline gap-6 w-full max-w-full"
-        >
-            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-hover:text-[#121212] transition-colors shrink-0">05</span>
-            <span className="flex-1 min-w-0 text-2xl font-light uppercase tracking-widest group-hover:translate-x-2 group-hover:font-bold transition-all text-[#121212] truncate">
-                sessions
-            </span>
-        </MechanicalButton>
-      </nav>
-
-      <div className="flex-none pb-safe-bottom pb-12">
-        <div className="pt-12 flex justify-center opacity-30">
-            <span className="text-[9px] font-mono tracking-widest text-[#121212] uppercase">
-                V0.1
-            </span>
+          </MechanicalButton>
         </div>
       </div>
+
+      <nav className="flex-1 flex flex-col gap-8 overflow-y-auto overflow-x-hidden p-6 pb-safe-bottom w-full">
+
+        <MechanicalButton onTrigger={() => { audio.playClick(); onClose(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+          <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">01</span>
+          <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">resume</span>
+        </MechanicalButton>
+
+        <MechanicalButton onTrigger={() => { audio.playClick(); toggleBauhausMode(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+          <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">02</span>
+          <div className="flex-1 flex items-center justify-between gap-4">
+            <span className={`text-xl uppercase tracking-widest text-[#121212] group-active:translate-x-2 transition-all ${isBauhausMode ? 'font-bold' : 'font-light'}`}>bauhaus</span>
+            <div className={`w-12 h-6 border-2 border-[#121212] p-1 transition-colors ${isBauhausMode ? 'bg-[#121212]' : 'bg-transparent'}`}>
+              <div className={`h-full w-1/2 bg-[#121212] transition-all ease-out ${isBauhausMode ? 'translate-x-full bg-white' : 'translate-x-0'}`} />
+            </div>
+          </div>
+        </MechanicalButton>
+
+        <MechanicalButton onTrigger={() => { if (!isSoundEnabled) audio.setMuted(false); audio.playClick(); toggleSound(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+          <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">03</span>
+          <div className="flex-1 flex items-center justify-between gap-4">
+            <span className={`text-xl uppercase tracking-widest text-[#121212] group-active:translate-x-2 transition-all ${isSoundEnabled ? 'font-bold' : 'font-light'}`}>sound</span>
+            <div className={`w-12 h-6 border-2 border-[#121212] p-1 transition-colors ${isSoundEnabled ? 'bg-[#121212]' : 'bg-transparent'}`}>
+              <div className={`h-full w-1/2 bg-[#121212] transition-all ease-out ${isSoundEnabled ? 'translate-x-full bg-white' : 'translate-x-0'}`} />
+            </div>
+          </div>
+        </MechanicalButton>
+
+        <MechanicalButton onTrigger={() => { audio.playClick(); onRestartOnboarding(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+          <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">04</span>
+          <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">tutorial</span>
+        </MechanicalButton>
+
+        <MechanicalButton onTrigger={() => { audio.playClick(); onOpenArchive(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+          <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">05</span>
+          <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">sessions</span>
+        </MechanicalButton>
+
+        {/* Footer */}
+        <div className="mt-auto pt-12 flex flex-col items-center">
+          <span className="text-[10px] font-mono tracking-widest text-[#121212] uppercase opacity-30">
+            V0.1
+          </span>
+        </div>
+
+      </nav>
     </div>
   );
 };
