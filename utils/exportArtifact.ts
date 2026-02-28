@@ -1,13 +1,30 @@
 /**
  * exportArtifact.ts — The Relativist
  *
- * Draws the session artifact card directly to a canvas using the 2D API.
- * No html2canvas. No CSS parsing. No oklch errors.
+ * Draws the session artifact card to an offscreen canvas (2D API, no CSS
+ * parsing, no oklch errors), then exports via the appropriate path:
  *
- * Share flow: navigator.share with files → <a download> fallback.
+ * On Capacitor (iOS / Android):
+ *   1. canvas.toDataURL → base64
+ *   2. Filesystem.writeFile → real file:// URI in Cache dir
+ *   3. Share.share({ files: [uri] }) → native share sheet
+ *
+ * On web (dev / browser):
+ *   base64 → Blob → navigator.share with File objects → <a download> fallback
+ *
+ * WHY NOT navigator.share with File objects on Capacitor:
+ *   navigator.canShare({ files }) returns false in Capacitor WebView for
+ *   in-memory blob-backed File objects. The WebView has no access to a
+ *   file:// URI for the blob, so the OS share intent never fires.
+ *   The @capacitor/share plugin bypasses this by invoking the native
+ *   Android/iOS share API directly with a real cache-directory URI.
  */
 
 import { SessionData } from '../types';
+
+const isCapacitor = (): boolean =>
+  typeof (window as any).Capacitor !== 'undefined' &&
+  (window as any).Capacitor.isNativePlatform?.();
 
 export interface ExportOptions {
   session: SessionData;
@@ -86,7 +103,6 @@ function drawCard(
   ctx.textAlign = 'left';
 
   // Left: RESONANCE
-
   ctx.fillStyle = '#9ca3af';
   ctx.font = '700 8px/1 monospace';
   ctx.fillText('RESONANCE', textPad, labelY);
@@ -114,38 +130,58 @@ export async function exportArtifact({
   resonance,
   pixelRatio = 3,
 }: ExportOptions): Promise<void> {
-  const W = 280; // logical width in px
+  const W = 280;
   const fileName = `relativist-session-${session.id.toString().padStart(2, '0')}.png`;
 
-  // Ensure Jost 900 is ready for canvas (already in page via Google Fonts link)
+  // Ensure Jost 900 is available to the canvas context
   await document.fonts.load('900 13px Jost');
 
-  // ── Draw to offscreen canvas ────────────────────────────────────
+  // ── 1. Draw to offscreen canvas ─────────────────────────────────
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D context unavailable');
 
-  // Measure height first at scale 1
+  // Measure height at scale 1, then redraw at full pixel ratio
   canvas.width = W;
-  canvas.height = 1; // temp — drawCard will tell us the real height
-  ctx.scale(1, 1);
+  canvas.height = 1;
   const H = drawCard(ctx, session, resonance, W);
 
-  // Redraw at full pixel ratio
   canvas.width = W * pixelRatio;
   canvas.height = H * pixelRatio;
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   drawCard(ctx, session, resonance, W);
 
-  // ── Canvas → Blob ────────────────────────────────────────────────
-  const blob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((b) => {
-      if (b) resolve(b);
-      else reject(new Error('Canvas toBlob failed'));
-    }, 'image/png');
-  });
+  // ── 2. Canvas → base64 dataURL ──────────────────────────────────
+  const dataUrl = canvas.toDataURL('image/png');
+  const base64Data = dataUrl.split(',')[1];
 
-  // ── Share or download ────────────────────────────────────────────
+  // ── 3. Native path (Capacitor) ──────────────────────────────────
+  if (isCapacitor()) {
+    const { Filesystem, Directory } = await import('@capacitor/filesystem');
+    const { Share } = await import('@capacitor/share');
+
+    const writeResult = await Filesystem.writeFile({
+      path: fileName,
+      data: base64Data,
+      directory: Directory.Cache,
+    });
+
+    await Share.share({
+      title: 'The Relativist',
+      text: `Session ${session.id.toString().padStart(2, '0')} · ${resonance}% Resonance`,
+      files: [writeResult.uri],
+      dialogTitle: 'Export Artifact',
+    });
+
+    return;
+  }
+
+  // ── 4. Web fallback ─────────────────────────────────────────────
+  const binary = atob(base64Data);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  const blob = new Blob([arr], { type: 'image/png' });
+
   const file = new File([blob], fileName, { type: 'image/png' });
   if (
     navigator.share &&
@@ -160,7 +196,7 @@ export async function exportArtifact({
     return;
   }
 
-  // Fallback: <a download>
+  // Last resort: <a download>
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
