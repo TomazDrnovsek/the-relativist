@@ -12,97 +12,161 @@ interface ArchiveProps {
 }
 
 const Archive: React.FC<ArchiveProps> = ({ currentSession, currentLevel, sessions, onClose }) => {
-  // Calculate active slot based on the shuffled playOrder
-  // If playOrder is missing (legacy sessions), fallback to linear order (currentLevel - 1)
-  const activeSlot = (currentSession && currentSession.playOrder) 
+  const activeSlot = (currentSession && currentSession.playOrder)
     ? (currentSession.playOrder[currentLevel - 1] ?? -1)
     : (currentLevel - 1);
 
-  return (
-    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col animate-in slide-in-from-bottom duration-300 font-sans text-[#121212]" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      {/* Header - Aligned with Main Screen: py-4, border-b border-black/5 */}
-      <div className="px-6 py-4 mb-8 flex justify-between items-center bg-[#F5F2EB] border-b border-[#121212]/5 shrink-0">
-        <h2 className="text-4xl font-bold lowercase tracking-[-0.04em] text-[#121212]">sessions.</h2>
-        <MechanicalButton 
-          onTrigger={() => {
-              audio.playClick();
-              onClose();
-          }}
-          scaleActive={0.85}
-          className="w-12 h-12 flex items-center justify-center border-2 border-[#121212] hover:bg-[#121212] hover:text-white transition-colors"
-        >
-          ✕
-        </MechanicalButton>
-      </div>
-      
-      {/* Grid Content */}
-      <div className="flex-1 overflow-y-auto px-6 pb-safe-bottom">
-        <div className="grid grid-cols-2 gap-4 pb-6">
-            
-            {/* CURRENT ACTIVE SESSION */}
-            {currentSession && (
-                <div className="col-span-2 border border-neutral-200 p-4 bg-white relative">
-                    <div className="flex justify-between items-start mb-4">
-                        <span className="text-[10px] font-mono uppercase tracking-[0.24em] text-neutral-400">
-                            Active Session
-                        </span>
-                        <span className="text-base font-black text-[#121212]">
-                            {currentSession.id.toString().padStart(2, '0')}
-                        </span>
-                    </div>
-                    
-                    <div className="flex gap-6 items-center">
-                         <div className="w-24 h-24 flex-none border border-[#121212]/10">
-                            <SessionGrid 
-                                palette={currentSession.palette} 
-                                progress={currentSession.progress}
-                                activeSlot={activeSlot} 
-                                size="card" 
-                            />
-                         </div>
-                         <div className="flex flex-col justify-center min-w-0">
-                            <h3 className="text-2xl font-black text-[#121212] tracking-tighter opacity-20 truncate">
-                                UNIDENTIFIED
-                            </h3>
-                            <div className="mt-2">
-                                <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-400">ASSIGNMENT </span>
-                                <span className="text-lg font-black tracking-tight text-[#121212]">{currentLevel.toString().padStart(2, '0')}</span>
-                                <span className="text-sm font-mono text-neutral-400"> / 16</span>
-                            </div>
-                         </div>
-                    </div>
-                </div>
-            )}
+  const renderInProgressCard = () => {
+    if (!currentSession) return null;
 
-            {/* COMPLETED SESSIONS */}
-            {sessions.map((session) => (
-                <div key={session.id} className="border border-[#121212]/10 p-4 bg-white flex flex-col gap-4">
-                    <div className="w-full">
-                        <SessionGrid 
-                            palette={session.palette} 
-                            progress={session.progress}
-                            activeSlot={-1} 
-                            size="card" 
-                        />
+    const completedAssignments = currentSession.progress.filter(p => p !== null);
+    const sum = completedAssignments.reduce((a, b) => a + (b as number), 0);
+    const avgResonance = completedAssignments.length > 0
+      ? Math.round(sum / completedAssignments.length)
+      : null;
+
+    return (
+      <div className="border border-neutral-200 bg-white p-4">
+
+        {/* Header row */}
+        <div className="flex items-baseline justify-between mb-3">
+          <div className="flex items-baseline gap-2">
+            <span className="text-base font-black text-[#121212]">
+              UNIDENTIFIED
+            </span>
+          </div>
+        </div>
+
+        {/* Body: artifact left, info right */}
+        <div className="flex gap-4 items-start">
+
+          {/* SessionGrid artifact */}
+          <div className="w-24 h-24 flex-none border border-[#121212]/10">
+            <SessionGrid
+              palette={currentSession.palette}
+              progress={currentSession.progress}
+              activeSlot={activeSlot}
+              size="card"
+            />
+          </div>
+
+          {/* Info column */}
+          <div className="flex flex-col justify-start gap-2 min-w-0 flex-1">
+
+            {/* Status */}
+            <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-400">
+              IN PROGRESS · {currentSession.id.toString().padStart(2, '0')}
+            </span>
+
+            {/* Assignment counter */}
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[10px] font-mono uppercase tracking-[0.22em] text-neutral-400">
+                ASSIGNMENT
+              </span>
+              <span className="text-lg font-black tracking-tight text-[#121212]">
+                {currentLevel.toString().padStart(2, '0')}
+              </span>
+              <span className="text-sm font-mono text-neutral-400">/ 16</span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="h-1 bg-neutral-100 relative overflow-hidden">
+              <div
+                className="absolute inset-y-0 left-0 bg-[#121212] transition-all duration-300"
+                style={{ width: `${(currentLevel / 16) * 100}%` }}
+              />
+            </div>
+
+            {/* Avg resonance */}
+            <p className="text-[9px] font-mono uppercase tracking-[0.2em] text-neutral-400">
+              AVG RESONANCE {avgResonance !== null ? `${avgResonance}%` : '—'}
+            </p>
+
+          </div>
+        </div>
+
+      </div>
+    );
+  };
+
+  return (
+    <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col animate-in slide-in-from-bottom duration-300 font-sans text-[#121212]">
+
+      {/* HEADER */}
+      <div className="shrink-0 pt-safe-top bg-[#F5F2EB] border-b border-[#eae7e0] z-20">
+        <div className="px-6 py-4 flex justify-between items-center">
+          <h2 className="text-4xl font-bold lowercase tracking-[-0.04em] text-[#121212]">sessions.</h2>
+          <MechanicalButton
+            onTrigger={() => { audio.playClick(); onClose(); }}
+            scaleActive={0.85}
+            className="w-12 h-12 flex items-center justify-center border-2 border-[#121212] hover:bg-[#121212] hover:text-white transition-colors text-sm"
+          >
+            ✕
+          </MechanicalButton>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-6 pt-6 pb-safe-bottom">
+        <div className="flex flex-col gap-6 pb-12">
+
+          {/* ── IN PROGRESS ── */}
+          {renderInProgressCard()}
+
+          {/* ── COMPLETED SESSIONS GRID ── */}
+          {sessions.length > 0 ? (
+            <div className="grid grid-cols-2 gap-4">
+              {sessions.map((session) => {
+                const completed = session.progress.filter(p => p !== null);
+                const avgResonance = completed.length > 0
+                  ? Math.round(completed.reduce((a, b) => a + (b as number), 0) / completed.length)
+                  : 0;
+
+                return (
+                  <div key={session.id} className="border border-neutral-200 bg-white">
+
+                    {/* Artifact */}
+                    <div className="p-2">
+                      <SessionGrid
+                        palette={session.palette}
+                        progress={session.progress}
+                        activeSlot={-1}
+                        size="card"
+                      />
                     </div>
-                    
-                    <div className="flex flex-col">
-                        <h3 className="text-sm font-bold lowercase tracking-tight text-[#121212] truncate">
-                            {session.name}
-                        </h3>
-                        <div className="text-[9px] font-mono text-neutral-400 uppercase tracking-widest mt-1">
-                            ID.{session.id.toString().padStart(2, '0')}
-                        </div>
+
+                    {/* Divider */}
+                    <div className="mx-2 border-t" style={{ borderColor: '#e8e5de' }} />
+
+                    {/* Metadata strip */}
+                    <div className="px-2.5 py-2.5 flex items-center justify-between">
+                      <div>
+                        <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-neutral-400 mb-1">
+                          SESSION
+                        </p>
+                        <p className="text-xl font-black tracking-tight text-[#121212]">
+                          {session.id.toString().padStart(2, '0')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[9px] font-mono uppercase tracking-[0.22em] text-neutral-400 mb-1">
+                          RESONANCE
+                        </p>
+                        <p className="text-xl font-black tracking-tight text-[#121212]">
+                          {avgResonance}<span className="text-xs font-bold ml-0.5">%</span>
+                        </p>
+                      </div>
                     </div>
-                </div>
-            ))}
-            
-            {/* Empty State */}
-            {sessions.length === 0 && !currentSession && (
-                 <div className="col-span-2 text-center py-20 opacity-40">
-                    <p className="font-medium text-[10px] uppercase tracking-[0.2em]">No Data</p>
-                 </div>
-            )}
+
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-24 opacity-40">
+              <p className="text-[11px] font-mono uppercase tracking-[0.2em]">NO SESSIONS ON RECORD</p>
+            </div>
+          )}
+
         </div>
       </div>
     </div>
