@@ -19,6 +19,7 @@ import StartScreen from './components/StartScreen';
 import Onboarding from './components/Onboarding';
 import Archive from './components/Archive';
 import ArtifactView from './components/ArtifactView';
+import SessionDetailView from './components/SessionDetailView';
 
 // --- Constants ---
 const TARGET_BG: HSL = { h: 0, s: 0, l: 96 }; // #F5F5F5 (Near White)
@@ -53,6 +54,7 @@ const App: React.FC = () => {
   
   const [showMenu, setShowMenu] = useState(false);
   const [showArchive, setShowArchive] = useState(false);
+  const [selectedArchiveSession, setSelectedArchiveSession] = useState<SessionData | null>(null);
 
   const [isBauhausMode, setIsBauhausMode] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
@@ -598,6 +600,19 @@ const App: React.FC = () => {
             onClose={() => {
                 audio.playClick();
                 setShowArchive(false);
+            }}
+            onSessionClick={(s) => {
+                setSelectedArchiveSession(s);
+            }}
+          />
+      )}
+
+      {selectedArchiveSession && (
+          <SessionDetailView
+            session={selectedArchiveSession}
+            onClose={() => {
+                audio.playClick();
+                setSelectedArchiveSession(null);
             }}
           />
       )}
