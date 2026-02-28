@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { audio } from '../utils/audio';
 import MechanicalButton from './MechanicalButton';
 
@@ -10,6 +10,8 @@ interface MenuProps {
   isSoundEnabled: boolean;
   toggleSound: () => void;
   onRestartOnboarding: () => void;
+  onExportBackup?: () => void;
+  onImportBackup?: (file: File) => void;
 }
 
 const Menu: React.FC<MenuProps> = ({
@@ -20,7 +22,24 @@ const Menu: React.FC<MenuProps> = ({
   isSoundEnabled,
   toggleSound,
   onRestartOnboarding,
+  onExportBackup,
+  onImportBackup,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    audio.playClick();
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && onImportBackup) {
+      onImportBackup(file);
+    }
+    e.target.value = '';
+  };
+
   return (
     <div className="absolute inset-0 z-50 bg-[#F5F2EB] flex flex-col animate-in slide-in-from-left duration-300 font-sans text-[#121212]">
 
@@ -29,10 +48,7 @@ const Menu: React.FC<MenuProps> = ({
         <div className="w-full px-6 py-4 flex justify-between items-center relative z-30 shrink-0">
           <h2 className="text-4xl font-bold lowercase tracking-[-0.04em]">menu.</h2>
           <MechanicalButton
-            onTrigger={() => {
-              audio.playClick();
-              onClose();
-            }}
+            onTrigger={() => { audio.playClick(); onClose(); }}
             scaleActive={0.85}
             className="w-12 h-12 flex items-center justify-center border-2 border-[#121212] hover:bg-[#121212] hover:text-white transition-colors text-sm"
           >
@@ -77,6 +93,30 @@ const Menu: React.FC<MenuProps> = ({
           <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">05</span>
           <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">sessions</span>
         </MechanicalButton>
+
+        {onExportBackup && (
+          <MechanicalButton onTrigger={() => { audio.playClick(); onExportBackup(); }} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+            <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">06</span>
+            <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">export backup</span>
+          </MechanicalButton>
+        )}
+
+        {onImportBackup && (
+          <>
+            <MechanicalButton onTrigger={handleImportClick} scaleActive={0.98} className="text-left group flex items-baseline gap-6 w-full">
+              <span className="text-xs font-normal tabular-nums text-neutral-400/60 group-active:text-[#121212]">07</span>
+              <span className="flex-1 text-xl font-light uppercase tracking-widest group-active:translate-x-2 group-active:font-bold transition-all text-[#121212]">import backup</span>
+            </MechanicalButton>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileChange}
+              className="hidden"
+              aria-hidden="true"
+            />
+          </>
+        )}
 
         {/* Footer */}
         <div className="mt-auto pt-12 flex flex-col items-center">

@@ -8,6 +8,8 @@ import {
 } from './utils/color';
 import { getNextSession } from './utils/sessionGenerator';
 import { audio } from './utils/audio';
+import { exportBackup } from './utils/exportBackup';
+import { importBackup } from './utils/importBackup';
 import Slider from './components/Slider';
 import Logo from './components/Logo';
 import Menu from './components/Menu';
@@ -22,29 +24,26 @@ import ArtifactView from './components/ArtifactView';
 import SessionDetailView from './components/SessionDetailView';
 
 // --- Constants ---
-const TARGET_BG: HSL = { h: 0, s: 0, l: 96 }; // #F5F5F5 (Near White)
-const STRIP_1_BG: HSL = { h: 0, s: 0, l: 7 };   // Deep Black (#121212)
-const STRIP_2_BG: HSL = { h: 0, s: 0, l: 98 };  // Pure White
+const TARGET_BG: HSL = { h: 0, s: 0, l: 96 };
+const STRIP_1_BG: HSL = { h: 0, s: 0, l: 7 };
+const STRIP_2_BG: HSL = { h: 0, s: 0, l: 98 };
 
 const App: React.FC = () => {
   // --- State ---
   const [hasStarted, setHasStarted] = useState(false);
-  const [isStateLoaded, setIsStateLoaded] = useState(false); // Prevents premature saves
+  const [isStateLoaded, setIsStateLoaded] = useState(false);
   
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   
   const [level, setLevel] = useState<number>(1);
   const [sessionCount, setSessionCount] = useState<number>(1);
   
-  // Session State
   const [session, setSession] = useState<SessionData | null>(null);
   const [showArtifact, setShowArtifact] = useState(false);
   const [collection, setCollection] = useState<SessionData[]>([]);
   
-  // Target is now derived from session, but we keep local state for the active round
   const [targetColor, setTargetColor] = useState<HSL>(TARGET_BG);
   
-  // The 3 Context Strips
   const [strips, setStrips] = useState<StripData[]>([]);
   const [selectedStripId, setSelectedStripId] = useState<number>(0);
   
@@ -72,7 +71,7 @@ const App: React.FC = () => {
             setSession(savedState.currentSession || getNextSession(savedState.sessionCount || 1));
             setIsBauhausMode(savedState.settings?.isBauhausMode || false);
             
-            const soundEnabled = savedState.settings?.isSoundEnabled !== false; // default to true
+            const soundEnabled = savedState.settings?.isSoundEnabled !== false;
             setIsSoundEnabled(soundEnabled);
             audio.setMuted(!soundEnabled);
 
@@ -82,7 +81,6 @@ const App: React.FC = () => {
             setSession(getNextSession(1));
         }
     } else {
-        // No saved state, generate a fresh session
         setSession(getNextSession(1));
     }
     setIsStateLoaded(true);
@@ -90,7 +88,7 @@ const App: React.FC = () => {
 
   // --- State Persistence ---
   useEffect(() => {
-    if (!isStateLoaded) return; // Wait for initial state to load
+    if (!isStateLoaded) return;
 
     const gameState: GameState = {
       collection,
@@ -168,6 +166,26 @@ const App: React.FC = () => {
       setIsSoundEnabled(newVal);
       audio.setMuted(!newVal);
       if (newVal) audio.playClick();
+  };
+
+  // --- Backup handlers ---
+
+  const handleExportBackup = async () => {
+    try {
+      await exportBackup();
+    } catch (error) {
+      console.error('Export backup failed', error);
+    }
+  };
+
+  const handleImportBackup = async (file: File) => {
+    try {
+      await importBackup(file);
+      // importBackup calls window.location.reload() on success
+    } catch (error) {
+      console.error('Import backup failed:', (error as Error).message);
+      // TODO: surface error to user via a toast/modal if needed
+    }
   };
 
   // --- Core Actions ---
@@ -340,17 +358,10 @@ const App: React.FC = () => {
          className="flex-1 flex flex-col w-full h-full animate-film-advance"
       >
           {/* --- 1. HEADER --- */}
-          <div 
-            className="h-[20%] relative flex flex-col z-20 border-b border-[#121212]"
-          >
-             
-             {/* HEADER BAR */}
+          <div className="h-[20%] relative flex flex-col z-20 border-b border-[#121212]">
              <header className="w-full px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center relative z-30 shrink-0 border-b border-[#121212]/5">
                 <MechanicalButton 
-                  onTrigger={() => {
-                      audio.playClick();
-                      setShowMenu(true); 
-                  }}
+                  onTrigger={() => { audio.playClick(); setShowMenu(true); }}
                   scaleActive={0.8}
                   className="justify-self-start w-12 h-12 flex items-center justify-start text-[#121212] hover:opacity-60"
                 >
@@ -367,20 +378,14 @@ const App: React.FC = () => {
 
                 <div 
                     className="justify-self-end flex flex-col items-end justify-center leading-tight cursor-pointer group select-none"
-                    onClick={() => {
-                        audio.playClick();
-                        setShowArchive(true);
-                    }}
+                    onClick={() => { audio.playClick(); setShowArchive(true); }}
                 >
-                   {/* Session Coordinate */}
                    <div className="flex items-center gap-2">
                        <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#121212] transition-colors">S.</span>
                        <span className="text-sm font-bold tabular-nums text-[#121212] tracking-tight">
                            {sessionCount.toString().padStart(2, '0')}
                        </span>
                    </div>
-
-                   {/* Assignment Coordinate */}
                    <div className="flex items-center gap-2">
                        <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#121212] transition-colors">A.</span>
                        <span className="text-sm font-bold tabular-nums text-[#121212] tracking-tight">
@@ -395,11 +400,7 @@ const App: React.FC = () => {
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[10px] font-normal uppercase tracking-widest text-[#737373] pointer-events-none">
                     REF
                 </span>
-
-                <div 
-                    className="relative cursor-pointer"
-                    onDoubleClick={handleDevWin}
-                >
+                <div className="relative cursor-pointer" onDoubleClick={handleDevWin}>
                     <div className={`w-12 h-12 ${!isBauhausMode ? 'border border-[#121212]' : ''} active:scale-95 transition-transform flex items-center justify-center`}>
                        <ShapePrimitive
                            color={hslToString(targetColor)}
@@ -418,7 +419,6 @@ const App: React.FC = () => {
             {strips.map((strip, index) => {
                 const isSelected = !isDeveloped && selectedStripId === strip.id;
                 const { label, color } = getStripLabelConfig(index, strip.backgroundColor);
-                
                 return (
                     <ContextStrip
                         key={strip.id}
@@ -459,7 +459,7 @@ const App: React.FC = () => {
                           onChange={(v) => updateSelectedColor('l', v)} 
                           gradient={lightGradient} 
                           disabled={isDeveloped}
-                  />
+                      />
                   </div>
 
                   <div className="flex-1 flex items-end justify-center pb-8 min-h-0">
@@ -487,7 +487,6 @@ const App: React.FC = () => {
               
               {isWin && isBauhausMode && <WinEffect isBauhausMode={isBauhausMode} />}
 
-              {/* Score */}
               <div className="flex-none pt-12 flex flex-col items-center justify-center z-20 pointer-events-none">
                   <div className="text-6xl font-medium tabular-nums tracking-tighter text-[#121212] leading-none mb-4">
                       {score}%
@@ -497,7 +496,6 @@ const App: React.FC = () => {
                   </div>
               </div>
 
-              {/* Visual Proof */}
               <div className="flex-1 w-full relative flex items-center justify-center my-6">
                  <div 
                     className={`w-full h-full flex flex-col items-stretch max-h-[60vh] touch-none select-none ${isWin ? 'cursor-help' : ''}`}
@@ -507,7 +505,6 @@ const App: React.FC = () => {
                     onTouchStart={() => { if (isWin) { setShowResultValues(true); audio.triggerHaptic(5); } }}
                     onTouchEnd={() => setShowResultValues(false)}
                  >
-                     {/* Target */}
                      <div 
                         className="flex-1 w-full relative flex items-center justify-center"
                         style={{ 
@@ -522,7 +519,6 @@ const App: React.FC = () => {
                         </span>
                      </div>
 
-                     {/* Strips 1-3 */}
                      {strips.map((s, i) => (
                          <div 
                             key={s.id}
@@ -542,7 +538,6 @@ const App: React.FC = () => {
                  </div>
               </div>
 
-              {/* Action */}
               <div className="flex-none w-full px-6 flex flex-col gap-3 z-20">
                    {isWin && (
                        <MechanicalButton 
@@ -575,46 +570,40 @@ const App: React.FC = () => {
       {/* Menus */}
       {showMenu && (
         <Menu 
-            onClose={() => {
-                audio.playClick();
-                setShowMenu(false);
-            }} 
-            onOpenArchive={() => {
-                audio.playClick();
-                setShowMenu(false);
-                setShowArchive(true);
-            }}
+            onClose={() => { audio.playClick(); setShowMenu(false); }}
+            onOpenArchive={() => { audio.playClick(); setShowMenu(false); setShowArchive(true); }}
             isBauhausMode={isBauhausMode}
             toggleBauhausMode={toggleBauhausMode}
             isSoundEnabled={isSoundEnabled}
             toggleSound={toggleSound}
             onRestartOnboarding={handleRestartOnboarding}
+            onExportBackup={handleExportBackup}
+            onImportBackup={handleImportBackup}
         />
       )}
-      
+
+      {/* Archive + Session Detail — gated together */}
       {showArchive && (
-          <Archive 
+        <>
+          <Archive
             currentSession={session}
             currentLevel={level}
-            sessions={collection} 
-            onClose={() => {
-                audio.playClick();
-                setShowArchive(false);
-            }}
-            onSessionClick={(s) => {
-                setSelectedArchiveSession(s);
-            }}
-          />
-      )}
-
-      {selectedArchiveSession && (
-          <SessionDetailView
-            session={selectedArchiveSession}
+            sessions={collection}
             onClose={() => {
                 audio.playClick();
                 setSelectedArchiveSession(null);
+                setShowArchive(false);
             }}
+            onSessionClick={(s) => { setSelectedArchiveSession(s); }}
           />
+
+          {selectedArchiveSession && (
+            <SessionDetailView
+              session={selectedArchiveSession}
+              onClose={() => { audio.playClick(); setSelectedArchiveSession(null); }}
+            />
+          )}
+        </>
       )}
       
     </div>
