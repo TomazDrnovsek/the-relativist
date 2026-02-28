@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Safe area utilities — maps Tailwind classes to CSS env() variables.
+   Required for Android status bar and iOS home bar clearance. */
+@utility pt-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+@utility pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@utility pl-safe-left {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+@utility pr-safe-right {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
 :root {
   --bg-paper: #F5F2EB;
   --ink: #121212;
