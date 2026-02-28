@@ -109,8 +109,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
       </div>
 
       {/* 2. CONTROLS */}
-      <div className="h-[45%] bg-[#F5F2EB] flex flex-col px-6 justify-center pb-safe-bottom relative z-30">
-          <div className="w-full max-w-md mx-auto flex flex-col gap-10">
+      <div className="h-[45%] bg-[#F5F2EB] flex flex-col px-6 justify-center pb-safe-bottom relative z-30" style={{ minHeight: 'calc(238px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="w-full max-w-md mx-auto flex flex-col gap-6">
               <Slider 
                   label="H" 
                   value={userColor.h} min={0} max={360} 

@@ -396,7 +396,7 @@ const App: React.FC = () => {
              </header>
 
              {/* Target Swatch */}
-             <div className="h-[10vh] w-full relative flex items-center justify-center">
+             <div className="flex-1 min-h-0 w-full relative flex items-center justify-center">
                 <span className="absolute left-6 top-1/2 -translate-y-1/2 text-[10px] font-normal uppercase tracking-widest text-[#737373] pointer-events-none">
                     REF
                 </span>
@@ -436,7 +436,7 @@ const App: React.FC = () => {
           </div>
 
           {/* --- 3. CONTROLS --- */}
-          <div className="h-[45%] shrink-0 flex flex-col px-6 pt-8 pb-safe-bottom">
+          <div className="h-[45%] shrink-0 flex flex-col px-6 pt-8 pb-safe-bottom" style={{ minHeight: 'calc(306px + env(safe-area-inset-bottom, 0px))' }}>
               <div className="flex flex-col h-full">
                   <div className="flex flex-col gap-6">
                       <Slider 
