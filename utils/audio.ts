@@ -251,59 +251,12 @@ class AudioEngine {
     });
   }
 
-  async triggerHaptic(pattern: number | number[]) {
-    try {
-      const { Haptics, ImpactStyle, NotificationType } = await import('@capacitor/haptics');
-
-      // Single number — map by duration to impact style
-      if (typeof pattern === 'number') {
-        if (pattern <= 2) {
-          // Slider tick — lightest possible
-          await Haptics.impact({ style: ImpactStyle.Light });
-        } else if (pattern <= 8) {
-          // UI tap (strip select, menu, archive)
-          await Haptics.impact({ style: ImpactStyle.Medium });
-        } else {
-          // Analyze confirm (12)
-          await Haptics.impact({ style: ImpactStyle.Heavy });
-        }
-        return;
-      }
-
-      // Array patterns — map by semantic meaning
-      const key = pattern.join(',');
-
-      if (key === '10,50,10,50') {
-        // Success
-        await Haptics.notification({ type: NotificationType.Success });
-      } else if (key === '30,30') {
-        // Dissonance/error
-        await Haptics.notification({ type: NotificationType.Error });
-      } else if (key === '8,20,8') {
-        // Next assignment — medium double tap
-        await Haptics.impact({ style: ImpactStyle.Medium });
-        await new Promise(r => setTimeout(r, 28));
-        await Haptics.impact({ style: ImpactStyle.Medium });
-      } else if (key === '10,40,10,40,10') {
-        // Game start — triple light pulse
-        await Haptics.impact({ style: ImpactStyle.Light });
-        await new Promise(r => setTimeout(r, 50));
-        await Haptics.impact({ style: ImpactStyle.Light });
-        await new Promise(r => setTimeout(r, 50));
-        await Haptics.impact({ style: ImpactStyle.Light });
-      } else if (key === '10,40,10,40,80') {
-        // Session complete — success + heavy thump
-        await Haptics.notification({ type: NotificationType.Success });
-        await new Promise(r => setTimeout(r, 120));
-        await Haptics.impact({ style: ImpactStyle.Heavy });
-      } else {
-        // Fallback — medium impact
-        await Haptics.impact({ style: ImpactStyle.Medium });
-      }
-    } catch {
-      // Capacitor not available (browser) — fall back to navigator.vibrate
-      if (typeof navigator !== 'undefined' && navigator.vibrate) {
-        try { navigator.vibrate(pattern); } catch { /* ignore */ }
+  triggerHaptic(pattern: number | number[]) {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try {
+        navigator.vibrate(pattern);
+      } catch (e) {
+        // Ignore haptic errors
       }
     }
   }
