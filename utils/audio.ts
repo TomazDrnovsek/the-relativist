@@ -40,10 +40,10 @@ class AudioEngine {
     
     osc.type = 'sine';
     osc.frequency.setValueAtTime(600, now);
-    osc.frequency.linearRampToValueAtTime(100, now + 0.08);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.08);
     
     gain.gain.setValueAtTime(0.1, now);
-    gain.gain.linearRampToValueAtTime(0.001, now + 0.08);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
     
     osc.connect(gain);
     gain.connect(this.ctx.destination);
@@ -97,30 +97,33 @@ class AudioEngine {
     osc.stop(this.ctx.currentTime + 0.02);
   }
 
-  // Mechanical Shutter: Low impact + White noise slide
+  // Mechanical Shutter: Soft, analogue cloth shutter (Leica-style)
   playShutter() {
     if (!this.isEnabled || !this.ctx || this.isMuted) return;
     this.resume();
 
     const t = this.ctx.currentTime;
     
-    // 1. The "Clack" (Low frequency impulse)
+    // 1. Low Frequency Resonance (The Body Thud)
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     
-    osc.frequency.setValueAtTime(100, t);
-    osc.frequency.exponentialRampToValueAtTime(10, t + 0.1);
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(180, t);
+    osc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
     
-    gain.gain.setValueAtTime(0.5, t);
-    gain.gain.exponentialRampToValueAtTime(0.01, t + 0.1);
+    // Soft attack to avoid click, heavier sustain
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.4, t + 0.005);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
     
     osc.connect(gain);
     gain.connect(this.ctx.destination);
     osc.start(t);
-    osc.stop(t + 0.1);
+    osc.stop(t + 0.15);
 
-    // 2. The "Shhh" (White noise burst for mechanism slide)
-    const bufferSize = this.ctx.sampleRate * 0.15;
+    // 2. Mechanism Friction (The "Chhh") — Warm/Soft
+    const bufferSize = this.ctx.sampleRate * 0.1;
     const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -129,15 +132,17 @@ class AudioEngine {
 
     const noise = this.ctx.createBufferSource();
     noise.buffer = buffer;
-    const noiseGain = this.ctx.createGain();
     
-    // Lowpass to make it sound heavy
+    const noiseGain = this.ctx.createGain();
     const filter = this.ctx.createBiquadFilter();
+    
+    // 600Hz lowpass is very warm/muffled — eliminates metallic high end
     filter.type = 'lowpass';
-    filter.frequency.value = 800;
+    filter.frequency.value = 600;
+    filter.Q.value = 0.8;
 
-    noiseGain.gain.setValueAtTime(0.2, t);
-    noiseGain.gain.linearRampToValueAtTime(0, t + 0.15);
+    noiseGain.gain.setValueAtTime(0.25, t);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
 
     noise.connect(filter);
     filter.connect(noiseGain);

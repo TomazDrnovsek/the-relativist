@@ -149,6 +149,7 @@ const App: React.FC = () => {
   const handleStart = async () => {
       await audio.resume();
       audio.playClick();
+      audio.triggerHaptic([10, 40, 10, 40, 10]);
       setHasStarted(true);
   };
   
@@ -191,6 +192,7 @@ const App: React.FC = () => {
   // --- Core Actions ---
 
   const runAnalysis = () => {
+    audio.triggerHaptic(12);
     let totalScore = 0;
     strips.forEach(s => {
       totalScore += calculateMatchScore(targetColor, s.chipColor);
@@ -218,6 +220,7 @@ const App: React.FC = () => {
 
   const handleNextLevel = () => {
     audio.playAdvance();
+    audio.triggerHaptic([8, 20, 8]);
     
     if (!session) return;
     
@@ -231,6 +234,7 @@ const App: React.FC = () => {
     const updatedSession = { ...session, progress: newProgress };
     
     if (level >= 16) {
+        audio.triggerHaptic([10, 40, 10, 40, 80]);
         const completeSession = { ...updatedSession, isComplete: true };
         setSession(completeSession);
         setShowArtifact(true);
@@ -298,7 +302,7 @@ const App: React.FC = () => {
   const onSelectStrip = (id: number) => {
       if (!isDeveloped && id !== selectedStripId) {
           audio.playTap();
-          audio.triggerHaptic(8);
+          audio.triggerHaptic(6);
           setSelectedStripId(id);
       }
   };
@@ -365,7 +369,7 @@ const App: React.FC = () => {
           <div className="h-[20%] relative flex flex-col z-20 border-b border-[#121212]">
              <header className="w-full px-6 py-4 grid grid-cols-[1fr_auto_1fr] items-center relative z-30 shrink-0 border-b border-[#121212]/5">
                 <MechanicalButton 
-                  onTrigger={() => { audio.playClick(); setShowMenu(true); }}
+                  onTrigger={() => { audio.playClick(); audio.triggerHaptic(6); setShowMenu(true); }}
                   scaleActive={0.8}
                   className="justify-self-start w-12 h-12 flex items-center justify-start text-[#121212] hover:opacity-60"
                 >
@@ -382,7 +386,7 @@ const App: React.FC = () => {
 
                 <div 
                     className="justify-self-end flex flex-col items-end justify-center leading-tight cursor-pointer group select-none"
-                    onClick={() => { audio.playClick(); setShowArchive(true); }}
+                    onClick={() => { audio.playClick(); audio.triggerHaptic(6); setShowArchive(true); }}
                 >
                    <div className="flex items-center gap-2">
                        <span className="text-[10px] font-bold text-neutral-400 group-hover:text-[#121212] transition-colors">S.</span>
