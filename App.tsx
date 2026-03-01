@@ -351,6 +351,10 @@ const App: React.FC = () => {
           0% { transform: translateX(100%); opacity: 0; }
           100% { transform: translateX(0); opacity: 1; }
         }
+        @keyframes progressGrow {
+          from { width: var(--progress-from); }
+          to { width: var(--progress-to); }
+        }
       `}</style>
       
       <main 
@@ -393,6 +397,17 @@ const App: React.FC = () => {
                        </span>
                    </div>
                 </div>
+
+                {/* Session progress — overlays header border-b, animates on mount */}
+                <div
+                  className="absolute bottom-0 left-0 h-px bg-[#121212]"
+                  style={{
+                    '--progress-from': `${((level - 1) / 16) * 100}%`,
+                    '--progress-to': `${(level / 16) * 100}%`,
+                    width: `${(level / 16) * 100}%`,
+                    animation: 'progressGrow 300ms ease-out forwards',
+                  } as React.CSSProperties}
+                />
              </header>
 
              {/* Target Swatch */}
