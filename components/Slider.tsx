@@ -46,11 +46,12 @@ const Slider: React.FC<SliderProps> = ({ label, value, min, max, onChange, disab
         >
             {label}
         </label>
+
       </div>
       
       <div className="relative h-6 w-full flex items-center group">
         {/* Track - Thin Line */}
-        <div className="absolute w-full h-[2px] bg-neutral-300 pointer-events-none">
+        <div className="absolute w-full h-[2px] bg-neutral-300 pointer-events-none top-1/2 -translate-y-1/2">
            {/* Active/Gradient portion */}
            <div 
              className="h-full w-full opacity-100"
@@ -75,7 +76,7 @@ const Slider: React.FC<SliderProps> = ({ label, value, min, max, onChange, disab
           onPointerUp={() => setIsActive(false)}
           onPointerLeave={() => setIsActive(false)}
           onBlur={() => setIsActive(false)}
-          className="absolute top-0 h-full opacity-0 cursor-pointer z-10"
+          className="absolute h-12 opacity-0 cursor-pointer z-10 top-1/2 -translate-y-1/2 m-0"
           style={{
             width: 'calc(100% + 40px)',
             left: '-20px',
@@ -86,7 +87,7 @@ const Slider: React.FC<SliderProps> = ({ label, value, min, max, onChange, disab
         {/* Thumb - Circle */}
         <div 
             className={`
-                absolute h-4 w-4 bg-[#121212] border border-[#121212] rounded-full pointer-events-none transition-transform duration-100 ease-out z-20
+                absolute h-4 w-4 bg-[#121212] border border-[#121212] rounded-full pointer-events-none transition-transform duration-100 ease-out z-20 top-1/2 -translate-y-1/2
                 ${isActive ? 'scale-125' : 'scale-100'} 
             `}
             style={{ 
