@@ -31,8 +31,6 @@ body {
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
-  -webkit-text-size-adjust: 100%;
-  text-size-adjust: 100%;
 }
 
 /* Remap old utility classes to new system */
@@ -50,6 +48,7 @@ body {
 /* Base Range Input Reset */
 input[type=range] {
   -webkit-appearance: none;
+  appearance: none;
   background: transparent;
   margin: 0;
   cursor: pointer;
